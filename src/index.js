@@ -1,4 +1,9 @@
+import { FFmpeg } from "./@ffmpeg/ffmpeg/dist/esm/index.js";
+import { toBlobURL } from "./@ffmpeg/util/dist/esm/index.js";
+
 const url = 'https://api.openai.com/v1/audio/transcriptions'
+
+const ffmpeg = new FFmpeg();
 
 const transcribe = (apiKey, file, language, response_format) => {
     const formData = new FormData()
@@ -26,6 +31,26 @@ const transcribe = (apiKey, file, language, response_format) => {
         }
     }).catch(error => console.error(error))
 }
+
+const loadFFmpeg = async () => {
+    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+    ffmpeg.on("log", ({ message }) => {
+        console.log(message);
+    });
+    // toBlobURL is used to bypass CORS issue, urls with the same
+    // domain can be used directly.
+    await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    });
+};
+
+const compressAudio = async (audio) => {
+    await ffmpeg.writeFile("audio", audio);
+    await ffmpeg.exec(["-i", "audio", "-vn", "-ar", "16000", "output.ogg"]);
+    const data = await ffmpeg.readFile("output.ogg");
+    return new Blob([data.buffer], { type: "audio/ogg" });
+};
 
 
 const hideStartView = () => {
@@ -93,19 +118,22 @@ const setTranscribedSegments = (segments) => {
     }
 }
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+    await loadFFmpeg();
+
     setupAPIKeyInput()
     outputElement = document.querySelector('#output')
 
     const fileInput = document.querySelector('#audio-file')
-    fileInput.addEventListener('change', () => {
+    fileInput.addEventListener('change', async () => {
         setTranscribingMessage('Transcribing...')
 
         const apiKey = localStorage.getItem('api-key')
         const file = fileInput.files[0]
+        const compressedAudio = await compressAudio(new Uint8Array(await file.arrayBuffer()));
         const language = document.querySelector('#language').value
         const response_format = document.querySelector('#response_format').value
-        const response = transcribe(apiKey, file, language, response_format)
+        const response = transcribe(apiKey, compressedAudio, language, response_format)
 
         response.then(transcription => {
             if (response_format === 'verbose_json') {
