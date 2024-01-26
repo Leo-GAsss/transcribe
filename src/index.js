@@ -119,10 +119,10 @@ const setTranscribedSegments = (segments) => {
 }
 
 window.addEventListener('load', async () => {
-    await loadFFmpeg();
-
     setupAPIKeyInput()
     outputElement = document.querySelector('#output')
+
+    await loadFFmpeg();
 
     const fileInput = document.querySelector('#audio-file')
     fileInput.addEventListener('change', async () => {
