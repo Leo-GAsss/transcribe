@@ -1,9 +1,6 @@
-import { FFmpeg } from "./@ffmpeg/ffmpeg/dist/esm/index.js";
-import { toBlobURL } from "./@ffmpeg/util/dist/esm/index.js";
-
 const url = 'https://api.openai.com/v1/audio/transcriptions'
 
-const ffmpeg = new FFmpeg();
+let ffmpeg;
 
 const transcribe = (apiKey, file, language, response_format) => {
     const formData = new FormData()
@@ -33,6 +30,11 @@ const transcribe = (apiKey, file, language, response_format) => {
 }
 
 const loadFFmpeg = async () => {
+    const { FFmpeg } = await import("./@ffmpeg/ffmpeg/dist/esm/index.js");
+    const { toBlobURL } = await import("./@ffmpeg/util/dist/esm/index.js");
+
+    ffmpeg = new FFmpeg();
+
     const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
     ffmpeg.on("log", ({ message }) => {
         console.log(message);
@@ -43,6 +45,9 @@ const loadFFmpeg = async () => {
         coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
     });
+
+    document.querySelector("#audio-file-label").textContent = "Choose an audio file";
+    document.querySelector("#audio-file").disabled = false;
 };
 
 const compressAudio = async (audio) => {

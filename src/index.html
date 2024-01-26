@@ -86,8 +86,8 @@
                     <option value="vtt">VTT</option>
                 </select><br />
                 <br>
-                <label for="audio-file" class="button">Choose an audio file</label>
-                <input type="file" accept=".aac, audio/*, video/*" id="audio-file" name="file" style="visibility:hidden;">
+                <label for="audio-file" class="button" id="audio-file-label" disabled>Loading FFmpeg. Please Wait...</label>
+                <input type="file" accept=".aac, audio/*, video/*" id="audio-file" name="file" style="visibility:hidden;" disabled>
               </form>
             <div id="output"></div>
             <footer>
