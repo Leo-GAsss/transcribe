@@ -110,7 +110,7 @@ const setTranscribedPlainText = (text) => {
     text = text.replaceAll('&', '&amp;')
     text = text.replaceAll('<', '&lt;')
     text = text.replaceAll('>', '&gt;')
-    outputElement.innerHTML = `<pre>${text}</pre>`
+    outputElement.innerHTML = `<pre style="text-wrap: wrap">${text}</pre>`
 }
 
 const setTranscribedSegments = (segments) => {
